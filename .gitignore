@@ -1,5 +1,7 @@
 jsonlab/*
-data/images/*
-imagenet-vgg-f.mat
+*.mat
 jsonlab/*
-netvlad/*
+matconvnet/*
+*.jpg
+*.jpeg
+*.png

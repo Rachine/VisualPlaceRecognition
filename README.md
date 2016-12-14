@@ -28,3 +28,6 @@ CNN architecture for weakly supervised place recognition. In IEEE Conference on 
 [Ordonez and Berg 2014] Ordonez, V. and Berg, T. (2014). Learning high-level judgments of urban perception,
 volume 8694 LNCS of Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial
 Intelligence and Lecture Notes in Bioinformatics), pages 494–510. Springer Verlag, Germany, part 6 edition.
+
+### Acknowledgments
+A huge part of the code is taken from this [github repository](https://github.com/Relja/netvlad)

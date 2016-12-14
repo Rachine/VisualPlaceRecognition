@@ -47,7 +47,7 @@ for l = 1:numel(net.layers)
         layer = rmfield(layer, 'biases') ;
       end
   end
-  if ~isfield(layer, 'weights')
+  if ~isfield(layer, 'weights') && ~isprop(layer, 'weights')
     layer.weights = {} ;
   end
 
@@ -114,7 +114,7 @@ for l = 1:numel(net.layers)
   end
 
   for i = 1:2:numel(defaults)
-    if ~isfield(layer, defaults{i})
+    if ~isfield(layer, defaults{i}) && ~isprop(layer, defaults{i})
       layer.(defaults{i}) = defaults{i+1} ;
     end
   end
