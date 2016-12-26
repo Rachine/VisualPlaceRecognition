@@ -5,3 +5,4 @@ matconvnet/*
 *.jpg
 *.jpeg
 *.png
+*.m~

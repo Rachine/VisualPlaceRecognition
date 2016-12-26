@@ -18,12 +18,12 @@ function paths= localPaths()
     
     % --- dataset specifications
     
-    paths.dsetSpecDir= strcat(workdir,'/','datasets/');
+    paths.dsetSpecDir= strcat(workdir,'/','datasets/datasets');
     
     % --- dataset locations
     paths.dsetRootPitts= strcat(workdir,'/','Databases/Pittsburgh/'); % should contain images/ and queries/
     paths.dsetRootTokyo247= strcat(workdir,'/','Databases/Tokyo247/'); % should contain images/ and query/
-    paths.dsetRootTokyoTM= strcat(workdir,'/','Databases/TokyoTM/'); % should contain images/
+    paths.dsetRootTokyoTM= strcat(workdir,'/','Databases/TokyoTM/tinyTimeMachine/'); % should contain images/
     paths.dsetRootOxford= strcat(workdir,'/','Relja/Work/Databases/OxfordBuildings/'); % should contain images/ and groundtruth/, and be writable
     paths.dsetRootParis= strcat(workdir,'/','Relja/Work/Databases/Paris/'); % should contain images/ (with subfolders defense, eiffel, etc), groundtruth/ and corrupt.txt, and be writable
     paths.dsetRootHolidays= strcat(workdir,'/','Relja/Work/Databases/Holidays/'); % should contain jpg/ for the original holidays, or jpg_rotated/ for rotated Holidays, and be writable
