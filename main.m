@@ -7,7 +7,7 @@ load( sprintf('%s%s.mat', paths.pretrainedCNNs, netID), 'net' );
 % net= relja_simplenn_tidy(net);
 
 % Load a test image from Wikipedia and run the model.
-im = imread('/home/rachine/VisualPlaceRecognition/Databases/Boston/images/id_1_400_300.jpg') ;
+im = imread(strcat(paths.dsetRootBoston, 'images/id_1_400_300.jpg')) ;
 im_ = single(im) ; % note: 255 range
 im_ = imresize(im_, net.meta.normalization.imageSize(1:2)) ;
 im_ = bsxfun(@minus,im_,net.meta.normalization.averageImage) ;
@@ -15,7 +15,8 @@ net= relja_simplenn_tidy(net);
 
 feats= computeRepresentation(net, im_,'useGPU',false);
 
-dbTest= dbBoston();
+delta = 10 ;
+dbTest= dbBoston(delta);
 
 dbFeatFn= sprintf('%s%s_%s_db.bin', paths.outPrefix, netID, dbTest.name);
 qFeatFn = sprintf('%s%s_%s_q.bin', paths.outPrefix, netID, dbTest.name);

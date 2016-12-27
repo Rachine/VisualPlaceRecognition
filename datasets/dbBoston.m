@@ -2,7 +2,7 @@ classdef dbBoston < dbBase
     
     methods
     
-        function db= dbBoston()
+        function db= dbBoston(delta)
             db.name= sprintf('Boston');
             
             paths= localPaths();
@@ -10,7 +10,7 @@ classdef dbBoston < dbBase
             db.dbPath= [dbRoot];
 %             db.qPath= [dbRoot, 'query/'];
             
-            db.dbLoad();
+            db.dbLoad(delta);
         end
         
         function [ids, ds]= nnSearchPostprocess(db, searcher, iQuery, nTop)
