@@ -14,7 +14,7 @@ function paths= localPaths()
     % which are **much slower**, and only included for demonstration purposes
     % so do consider installing yael_matlab, or make your own faster
     % version (especially of the yael_nn function)
-    paths.libYaelMatlab= strcat(workdir,'/','/yael_matlab/');
+    paths.libYaelMatlab= strcat(workdir,'/','/yael/');
     
     % --- dataset specifications
     

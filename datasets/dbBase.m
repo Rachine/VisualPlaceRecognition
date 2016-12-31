@@ -30,7 +30,7 @@ classdef dbBase < handle
         dbPath, dbImageFns, utmDb,
         safetyDb,wealthDb,
         numImages,
-        safetyLabels,wealthLabels
+        safetyLabels,wealthScores
         
     end
     
@@ -60,8 +60,7 @@ classdef dbBase < handle
             db.numImages= length(db.dbImageFns);
             assert( size(db.utmDb, 2) == db.numImages );
             
-            db.safetyLabels = db.generateLabels('safety', delta) ;
-            db.wealthLabels = db.generateLabels('wealth', delta) ;
+            [db.safetyLabels,db.wealthScores]  = db.generateLabels(delta) ;
             
             % make paths absolute just in case (e.g. vl_imreadjpeg needs absolute path)
             
@@ -74,18 +73,22 @@ classdef dbBase < handle
             
         end
         
-        function [labels] = generateLabels(db, type, delta)
-            % initialization
-            labels = zeros(1,db.numImages) ;
-            % type must be 'safety' or 'wealth'
-            scores = db.(strcat(type, 'Db')) ;
+        function [safetyLabels,wealthScores] = generateLabels(db, delta)
+            % initialization Safety Labels
+            safetyLabels = zeros(1,db.numImages) ;
+            % Safety labels
+            safetyScores = db.safetyDb ;
             % searching the scores in the top and bottom delta% 
-            sortedScores= sort(scores, 'descend') ;
+            sortedScores= sort(safetyScores, 'descend') ;
             deltaRank = floor(delta*db.numImages / 100) ;
             topScores = sortedScores(1:deltaRank) ;
-            labels(ismember(scores, topScores)) = 1 ;
-            bottomScores = sortedScores(end-deltaRank:end);
-            labels(ismember(scores, bottomScores)) = -1 ;
+            safetyLabels(ismember(safetyScores, topScores)) = 1 ;
+            bottomScores = sortedScores((end-deltaRank):end);
+            safetyLabels(ismember(safetyScores, bottomScores)) = -1 ;
+            
+            % Wealth Scores Standardization
+            wealthScoresRaw = db.wealthDb;
+            wealthScores = zscore(wealthScoresRaw);
         end
 
     end
