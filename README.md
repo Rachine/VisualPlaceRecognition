@@ -29,5 +29,7 @@ CNN architecture for weakly supervised place recognition. In IEEE Conference on 
 volume 8694 LNCS of Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial
 Intelligence and Lecture Notes in Bioinformatics), pages 494–510. Springer Verlag, Germany, part 6 edition.
 
+[A. Vedaldi and K. Lenc 2015 ] A. Vedaldi and K. Lenc (2015). MatConvNet -- Convolutional Neural Networks for MATLAB. Proceeding of the ACM Int. Conf. on Multimedia
+
 ### Acknowledgments
-A huge part of the code is taken from this [github repository](https://github.com/Relja/netvlad)
+A huge part of the code is taken from this [github repository](https://github.com/Relja/netvlad) and the examples in MatConvNet
