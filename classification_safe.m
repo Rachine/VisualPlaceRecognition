@@ -20,6 +20,10 @@ opts.loss = 'hinge';
 opts.delta = 50;
 opts.no_retrain = true ; % Variable to retrain or not the transferred layers from NetVlad
 opts.network = [] ;
+opts.expDir = paths.dsetSpecDir ;
+opts.numFetchThreads = 6 ;
+opts.gpus = [] ; 
+
 % net = add_block_perso(net, opts, '8', 1, 1, 4096, 1, 1, 0) ; 
 % % Not forget to remove loss layer for evaluation and test 
 % 
@@ -39,25 +43,24 @@ paths= localPaths();
 % -------------------------------------------------------------------------
 %                                                              Prepare data
 % -------------------------------------------------------------------------
+
 imdb = dbBoston(opts.delta);
 
-
-% % TODO Compute image statistics (mean, RGB covariances, etc.)
-% imageStatsPath = fullfile(opts.expDir, 'imageStats.mat') ;
-% if exist(imageStatsPath)
-%   load(imageStatsPath, 'averageImage', 'rgbMean', 'rgbCovariance') ;
-% else
-%   train = find(imdb.images.set == 1) ;
-%   images = fullfile(imdb.imageDir, imdb.images.name(train(1:100:end))) ;
-%   [averageImage, rgbMean, rgbCovariance] = getImageStats(images, ...
-%                                                     'imageSize', [256 256], ...
-%                                                     'numThreads', opts.numFetchThreads, ...
-%                                                     'gpus', opts.train.gpus) ;
-%   save(imageStatsPath, 'averageImage', 'rgbMean', 'rgbCovariance') ;
-% end
-% [v,d] = eig(rgbCovariance) ;
-% rgbDeviation = v*sqrt(d) ;
-% clear v d ;
+% Compute image statistics (mean, RGB covariances, etc.)
+imageStatsPath = fullfile(opts.expDir, strcat('imageStats', imdb.name, '.mat')) ;
+if exist(imageStatsPath)
+    load(imageStatsPath, 'averageImage', 'rgbMean', 'rgbCovariance') ;
+else
+    images = imdb.dbImageFns ;
+    [averageImage, rgbMean, rgbCovariance] = getImageStats(images, ...
+        'imageSize', [400 300], ...
+        'numThreads', opts.numFetchThreads, ...
+        'gpus', opts.gpus) ;
+    save(imageStatsPath, 'averageImage', 'rgbMean', 'rgbCovariance') ; 
+end
+[v,d] = eig(rgbCovariance) ;
+rgbDeviation = v*sqrt(d) ;
+clear v d ;
 
 % -------------------------------------------------------------------------
 %                                                             Prepare model
