@@ -17,6 +17,8 @@
 %   - safetyLabels: cell array of binary labels indicating for each image if the place is safe or not
 %   - wealthLabels: cell array of binary labels indicating for each image if the place is wealthy or not
 %   - safetyStdScores, wealthStdScores: standardized scores for the regression 
+%   - sets: cell array of binary labels indicating for each image if it
+%           belongs to the training set (75%) or the test set
 % 4. In the constructor, set db.dbPath and db.qPath specifying the root locations of database and query images, respectively. Presumably, like in dbPitts.m, you want to load these from a configuration file. The variables should be such that [db.dbPath, dbImageFns{i}] and [db.qPath, qImageFns{i}] form the full paths to database/query images.
 % 5. Finally: call db.dbLoad(); at the end of the constructor
 % 6. Optionally: you can override the methods for some more functionality, e.g. for Tokyo Time Machine we modify the fuction nontrivialPosQ which gets all potential positives for a query that are non-trivial (don't come from the same panorama). For Time Machine data, we also make sure that the nontrivial potential positives are taken at different times than the query panorama (for generalization, c.f. our NetVLAD paper). There was no need for this for the Pittsburgh dataset as the query and the database sets were taken at different times, but for TokyoTM the query set is constructed out of the database set. Furthermore, one can also supplu 'nnSearchPostprocess' which filters search results (used in testCore.m), e.g. it is done for Tokyo 24/7 to follow the standard test procedure for this dataset (i.e. perform very simple non-max suppression)
@@ -32,7 +34,8 @@ classdef dbBase < handle
         safetyDb,wealthDb,
         numImages,
         safetyLabels,wealthLabels,
-        safetyStdScores, wealthStdScores
+        safetyStdScores, wealthStdScores,
+        set
         
     end
     
@@ -68,6 +71,8 @@ classdef dbBase < handle
             db.safetyStdScores = db.generateStdScores('safety') ;
             db.wealthStdScores = db.generateStdScores('wealth') ;
             
+            db.set = db.split() ; 
+            
             % make paths absolute just in case (e.g. vl_imreadjpeg needs absolute path)
             
             for propName= properties(db)'
@@ -98,6 +103,13 @@ classdef dbBase < handle
             rawScores = db.(strcat(type, 'Db')) ;
             % Returns the standardized scores for regression
             stdScores = zscore(rawScores) ;
+        end
+        
+        function [set] = split(db)
+            set = zeros(1, db.numImages) ;
+            randIndexes = randperm(db.numImages) ;
+            size_train = floor(0.75*db.numImages) ;
+            set(randIndexes(1:size_train)) = 1 ;
         end
     
     end

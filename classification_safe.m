@@ -24,7 +24,7 @@ opts.expDir = paths.dsetSpecDir ;
 opts.numFetchThreads = 6 ;
 opts.gpus = [] ; 
 opts.cityTrain = 'Boston';
-opts.cityTest = 'Bosotn';
+opts.cityTest = 'Boston';
 
 %Will be possible to train on one and test on another city
 
@@ -55,13 +55,14 @@ imageStatsPath = fullfile(opts.expDir, strcat('imageStats', imdb.name, '.mat')) 
 if exist(imageStatsPath)
     load(imageStatsPath, 'averageImage', 'rgbMean', 'rgbCovariance') ;
 else
-    images = imdb.dbImageFns ;
+    train = find(imdb.set == 1) ;
+    images = imdb.dbImageFns(train(1:50:end)) ;
     [averageImage, rgbMean, rgbCovariance] = getImageStats(images, ...
-        'imageSize', [400 300], ...
+        'imageSize', [300 400], ...
         'numThreads', opts.numFetchThreads, ...
         'gpus', opts.gpus, ...
         'city',opts.cityTrain) ;
-    save('imageStats.mat', 'averageImage', 'rgbMean', 'rgbCovariance') ;
+    save(imageStatsPath, 'averageImage', 'rgbMean', 'rgbCovariance') ;
 end
 [v,d] = eig(rgbCovariance) ;
 rgbDeviation = v*sqrt(d) ;
