@@ -129,7 +129,7 @@ function y = vl_nnloss(x,c,dzdy,varargin)
 opts.instanceWeights = [] ;
 opts.classWeights = [] ;
 opts.threshold = 0 ;
-opts.loss = 'softmaxlog' ;
+opts.loss = 'hinge' ;
 opts.topK = 5 ;
 opts = vl_argparse(opts, varargin, 'nonrecursive') ;
 
