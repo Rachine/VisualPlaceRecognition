@@ -23,11 +23,15 @@ opts.network = [] ;
 opts.expDir = paths.dsetSpecDir ;
 opts.numFetchThreads = 6 ;
 opts.gpus = [] ; 
+opts.cityTrain = 'Boston';
+opts.cityTest = 'Bosotn';
 
-% net = add_block_perso(net, opts, '8', 1, 1, 4096, 1, 1, 0) ; 
-% % Not forget to remove loss layer for evaluation and test 
-% 
-% net = relja_simplenn_tidy(net);
+%Will be possible to train on one and test on another city
+
+net = add_block_perso(net, opts, '8', 1, 1, 4096, 1, 1, 0) ; 
+% Not forget to remove loss layer for evaluation and test 
+
+net = relja_simplenn_tidy(net);
 
 
 function [net, info] = cnn_safety(varagin)
@@ -55,8 +59,9 @@ else
     [averageImage, rgbMean, rgbCovariance] = getImageStats(images, ...
         'imageSize', [400 300], ...
         'numThreads', opts.numFetchThreads, ...
-        'gpus', opts.gpus) ;
-    save(imageStatsPath, 'averageImage', 'rgbMean', 'rgbCovariance') ; 
+        'gpus', opts.gpus, ...
+        'city',opts.cityTrain) ;
+    save('imageStats.mat', 'averageImage', 'rgbMean', 'rgbCovariance') ;
 end
 [v,d] = eig(rgbCovariance) ;
 rgbDeviation = v*sqrt(d) ;

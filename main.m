@@ -1,31 +1,55 @@
 %%% DEMO for NETVLAD + SVM 
 setup;
 
-paths= localPaths();
-netID= 'vd16_pitts30k_conv5_3_vlad_preL2_intra';
-load( sprintf('%s%s.mat', paths.pretrainedCNNs, netID), 'net' );
-% net= relja_simplenn_tidy(net);
+paths = localPaths();
+netID= 'vd16_pitts30k_conv5_3_vlad_preL2_intra_white';
+load( sprintf('%s%s.mat', paths.pretrainedCNNs, netID), 'net' ); 
+% opts.scale = 1 ;
+% opts.initBias = 0 ;
+% opts.weightDecay = 1 ;
+% %opts.weightInitMethod = 'xavierimproved' ;
+% opts.weightInitMethod = 'gaussian' ;
+% opts.batchNormalization = false ;
+% opts.networkType = 'simplenn' ;
+% opts.cudnnWorkspaceLimit = 1024*1024*1204 ; % 1GB
+% opts.classNames = {} ;
+% opts.classDescriptions = {} ;
+% opts.averageImage = zeros(3,1) ;
+% opts.colorDeviation = zeros(3) ;
+% opts.loss = 'hinge';
 
+opts.scale = 1 ;
+opts.initBias = 0 ;
+opts.weightDecay = 1 ;
+%opts.weightInitMethod = 'xavierimproved' ;
+opts.weightInitMethod = 'gaussian' ;
+opts.model = 'alexnet' ;
+opts.batchNormalization = false ;
+opts.networkType = 'simplenn' ;
+opts.cudnnWorkspaceLimit = 1024*1024*1204 ; % 1GB
+opts.classNames = {} ;
+opts.classDescriptions = {} ;
+opts.averageImage = zeros(3,1) ;
+opts.colorDeviation = zeros(3) ;
+% opts = vl_argparse(opts, varargin) ;
+
+
+
+net = add_block_perso(net, opts, '8', 1, 1, 4096, 1, 1, 0) ; 
+% net.layers{end+1} = struct('type', 'softmaxloss') ; % add loss layer
+net= relja_simplenn_tidy(net);
+   
+    
 % Load a test image from Wikipedia and run the model.
 im = imread(strcat(paths.dsetRootBoston, 'images/id_1_400_300.jpg')) ;
 im_ = single(im) ; % note: 255 range
 im_ = imresize(im_, net.meta.normalization.imageSize(1:2)) ;
 im_ = bsxfun(@minus,im_,net.meta.normalization.averageImage) ;
-net= relja_simplenn_tidy(net);
 
-feats= computeRepresentation(net, im_,'useGPU',false);
+% delta = 10 ;
+% dbTest= dbBoston(delta);
 
-delta = 10 ;
-dbTest= dbBoston(delta);
 
-dbFeatFn= sprintf('%s%s_%s_db.bin', paths.outPrefix, netID, dbTest.name);
-qFeatFn = sprintf('%s%s_%s_q.bin', paths.outPrefix, netID, dbTest.name);
+feats= computeRepresentation(net, im_,'useGPU',false)
 
-% % Compute db/query image representations
-serialAllFeats(net, dbTest.dbPath, dbTest.dbImageFns, dbFeatFn, 'batchSize', 1); % adjust batchSize depending on your GPU / network size
-% % serialAllFeats(net, dbTest.qPath, dbTest.qImageFns, qFeatFn, 'batchSize', 1); % Tokyo 24/7 query images have different resolutions so batchSize is constrained to 1
-
-% Measure recall@N
-% [recall, ~, ~, opts]= testFromFn(dbTest, dbFeatFn, qFeatFn);
-% plot(opts.recallNs, recall, 'ro-'); grid on; xlabel('N'); ylabel('Recall@N');
 
