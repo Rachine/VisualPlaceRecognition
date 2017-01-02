@@ -1,8 +1,8 @@
-setup;
+
+function [net, info] = classification_safe(varargin)
 paths = localPaths();
 
 opts.netID= 'vd16_pitts30k_conv5_3_vlad_preL2_intra_white';
-load( sprintf('%s%s.mat', paths.pretrainedCNNs, opts.netID), 'net' );
 
 opts.scale = 1 ;
 opts.initBias = 0 ;
@@ -23,18 +23,13 @@ opts.network = [] ;
 opts.expDir = paths.dsetSpecDir ;
 opts.numFetchThreads = 6 ;
 opts.gpus = [] ; 
-opts.cityTrain = 'Boston';
-opts.cityTest = 'Boston';
+opts.train = struct() ;
 
 %Will be possible to train on one and test on another city
+opts.cityTrain = 'Boston'; % Can be NY or Boston
+opts.cityTest = 'Boston'; % Can be NY or Boston
+opts.task = 'safety'; % Can be safety or wealth
 
-net = add_block_perso(net, opts, '8', 1, 1, 4096, 1, 1, 0) ; 
-% Not forget to remove loss layer for evaluation and test 
-
-net = relja_simplenn_tidy(net);
-
-
-function [net, info] = cnn_safety(varagin)
 
 % -------------------------------------------------------------------------
 %                                                              Prepare path
@@ -42,7 +37,7 @@ function [net, info] = cnn_safety(varagin)
 % 
 [opts, varargin] = vl_argparse(opts, varargin) ;
 setup;
-paths= localPaths();
+
 
 % -------------------------------------------------------------------------
 %                                                              Prepare data
@@ -56,7 +51,7 @@ if exist(imageStatsPath)
     load(imageStatsPath, 'averageImage', 'rgbMean', 'rgbCovariance') ;
 else
     train = find(imdb.set == 1) ;
-    images = imdb.dbImageFns(train(1:50:end)) ;
+    images = imdb.dbImageFns(train) ;
     [averageImage, rgbMean, rgbCovariance] = getImageStats(images, ...
         'imageSize', [300 400], ...
         'numThreads', opts.numFetchThreads, ...
@@ -99,6 +94,17 @@ if opts.no_retrain
     net.layers{31}.weightDecay = [0  0];
 end
 
+if ~opts.batchNormalization
+  lr = logspace(-2, -4, 60) ;
+else
+  lr = logspace(-1, -4, 20) ;
+end
+
+bs = 256 ;
+net.meta.trainOpts.learningRate = lr ;
+net.meta.trainOpts.numEpochs = numel(lr) ;
+net.meta.trainOpts.batchSize = bs ;
+net.meta.trainOpts.weightDecay = 0.0005 ;
 
 % -------------------------------------------------------------------------
 %                                                                     Learn
@@ -108,7 +114,7 @@ end
 trainFn = @cnn_train ;
 getBatchFn = @getBatch;
 
-[net, info] = trainFn(net, imdb, getBatchFn(opts, net.meta), ...
+[net, info] = trainFn(net, imdb, getBatchFn, ...
                       'expDir', opts.expDir, ...
                       net.meta.trainOpts, ...
                       opts.train) ;
@@ -121,15 +127,15 @@ end
 % Use trainWeakly.m for the inspiration
 function varargout = getBatch(opts, useGpu, networkType, imdb, batch)
 % -------------------------------------------------------------------------
-images = strcat([imdb.imageDir filesep], imdb.images.name(batch)) ;
-if ~isempty(batch) && imdb.images.set(batch(1)) == 1
+images = imdb.dbImageFns(batch) ;
+if ~isempty(batch) && imdb.set(batch(1)) == 1
   phase = 'train' ;
 else
   phase = 'test' ;
 end
 data = getImageBatch(images, opts.(phase), 'prefetch', nargout == 0) ;
 if nargout > 0
-  labels = imdb.images.label(batch) ;
+  labels = imdb.(strcat(opts.task,'Labels'))(batch) ;
   switch networkType
     case 'simplenn'
       varargout = {data, labels} ;
