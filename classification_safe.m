@@ -24,6 +24,7 @@ opts.expDir = paths.dsetSpecDir ;
 opts.numFetchThreads = 6 ;
 opts.gpus = [] ; 
 opts.train = struct() ;
+bs = 1 ;
 
 %Will be possible to train on one and test on another city
 opts.cityTrain = 'Boston'; % Can be NY or Boston
@@ -70,7 +71,9 @@ clear v d ;
 if isempty(opts.network)
   load( sprintf('%s%s.mat', paths.pretrainedCNNs, opts.netID), 'net' );
   opts.network = net;
-  net = add_block_perso(net, opts, '8', 1, 1, 4096, 1, 1, 0) ; 
+%   net = add_block_perso(net, opts, '8',1, 1, 4096, 2, 1, 0) ;
+    net = add_block(net, opts, '8', 1, 1, 4096, 2, 1, 0) ;
+
   net = relja_simplenn_tidy(net);
 
 else
@@ -100,7 +103,6 @@ else
   lr = logspace(-1, -4, 20) ;
 end
 
-bs = 256 ;
 net.meta.trainOpts.learningRate = lr ;
 net.meta.trainOpts.numEpochs = numel(lr) ;
 net.meta.trainOpts.batchSize = bs ;
@@ -133,7 +135,7 @@ if ~isempty(batch) && imdb.set(batch(1)) == 1
 else
   phase = 'test' ;
 end
-data = getImageBatch(images, opts.(phase), 'prefetch', nargout == 0) ;
+data = getImageBatch(images,'phase', opts.(phase), 'prefetch', nargout == 0) ;
 if nargout > 0
   labels = imdb.(strcat(opts.task,'Labels'))(batch) ;
   switch networkType
@@ -142,5 +144,32 @@ if nargout > 0
     case 'dagnn'
       varargout{1} = {'input', data, 'label', labels} ;
   end
+end
+end
+
+
+% --------------------------------------------------------------------
+function net = add_block(net, opts, id, h, w, in, out, stride, pad)
+% --------------------------------------------------------------------
+name='fc';
+convOpts = {'CudnnWorkspaceLimit', opts.cudnnWorkspaceLimit} ;
+net.layers{end+1} = struct('type', 'conv', 'name', sprintf('%s%s', name, id), ...
+                           'weights', {{init_weight(opts, h, w, in, out, 'single'), ...
+                             ones(out, 1, 'single')*opts.initBias}}, ...
+                           'stride', stride, ...
+                           'pad', pad, ...
+                           'dilate', 1, ...
+                           'learningRate', [1 2], ...
+                           'weightDecay', [opts.weightDecay 0], ...
+                           'opts', {convOpts}) ;
+net.layers{end+1} = struct('type', 'loss','name','classification_error');
+
+if opts.batchNormalization
+  net.layers{end+1} = struct('type', 'bnorm', 'name', sprintf('bn%s',id), ...
+                             'weights', {{ones(out, 1, 'single'), zeros(out, 1, 'single'), ...
+                               zeros(out, 2, 'single')}}, ...
+                             'epsilon', 1e-4, ...
+                             'learningRate', [2 1 0.1], ...
+                             'weightDecay', [0 0]) ;
 end
 end
