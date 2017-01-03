@@ -95,7 +95,7 @@ classdef dbBase < handle
             topScores = sortedScores(1:deltaRank) ;
             labels(ismember(scores, topScores)) = 1 ;
             bottomScores = sortedScores((end-deltaRank):end);
-            labels(ismember(scores, bottomScores)) = -1 ;
+            labels(ismember(scores, bottomScores)) = 2 ;
         end
         
         function [stdScores] = generateStdScores(db, type)

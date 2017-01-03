@@ -42,11 +42,12 @@ opts.conserveMemory = false ;
 opts.backPropDepth = 2 ;
 opts.sync = false ;
 opts.cudnn = true ;
-opts.errorFunction = 'binary' ;
+opts.errorFunction = 'multiclass' ;
 opts.errorLabels = {} ;
 opts.plotDiagnostics = false ;
 opts.plotStatistics = true;
 opts.task = 'safety';
+
 opts = vl_argparse(opts, varargin) ;
 
 if ~exist(opts.expDir, 'dir'), mkdir(opts.expDir) ; end

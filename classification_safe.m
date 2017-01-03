@@ -16,7 +16,7 @@ opts.classNames = {} ;
 opts.classDescriptions = {} ;
 opts.averageImage = zeros(3,1) ;
 opts.colorDeviation = zeros(3) ;
-opts.loss = 'hinge';
+opts.loss = 'mhinge';
 opts.delta = 50;
 opts.no_retrain = true ; % Variable to retrain or not the transferred layers from NetVlad
 opts.network = [] ;
@@ -24,7 +24,8 @@ opts.expDir = paths.dsetSpecDir ;
 opts.numFetchThreads = 6 ;
 opts.gpus = [] ; 
 opts.train = struct() ;
-bs = 1 ;
+opts.test = struct();
+bs = 16 ;
 
 %Will be possible to train on one and test on another city
 opts.cityTrain = 'Boston'; % Can be NY or Boston
@@ -133,7 +134,7 @@ images = imdb.dbImageFns(batch) ;
 if ~isempty(batch) && imdb.set(batch(1)) == 1
   phase = 'train' ;
 else
-  phase = 'test' ;
+  phase = 'val' ;
 end
 data = getImageBatch(images,'phase', opts.(phase), 'prefetch', nargout == 0) ;
 if nargout > 0

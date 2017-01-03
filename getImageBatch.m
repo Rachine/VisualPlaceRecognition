@@ -18,6 +18,7 @@ opts.jitterBrightness = 0 ;
 opts.jitterContrast = 0 ;
 opts.jitterSaturation = 0 ;
 opts.city = 'Boston';
+opts.phase = 'train';
 
 opts = vl_argparse(opts, varargin);
 
