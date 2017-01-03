@@ -25,7 +25,7 @@ opts.train = [] ;
 opts.val = [] ;
 opts.gpus = [] ;
 opts.prefetch = false ;
-opts.numEpochs = 300 ;
+opts.numEpochs = 2 ; %300
 opts.learningRate = 0.001 ;
 opts.weightDecay = 0.0005 ;
 opts.momentum = 0.9 ;
@@ -37,14 +37,16 @@ opts.profile = false ;
 opts.parameterServer.method = 'mmap' ;
 opts.parameterServer.prefix = 'mcn' ;
 
-opts.conserveMemory = true ;
-opts.backPropDepth = +inf ;
+opts.conserveMemory = false ;
+% opts.backPropDepth = +inf ;
+opts.backPropDepth = 2 ;
 opts.sync = false ;
 opts.cudnn = true ;
 opts.errorFunction = 'binary' ;
 opts.errorLabels = {} ;
 opts.plotDiagnostics = false ;
 opts.plotStatistics = true;
+opts.task = 'safety';
 opts = vl_argparse(opts, varargin) ;
 
 if ~exist(opts.expDir, 'dir'), mkdir(opts.expDir) ; end
@@ -65,10 +67,10 @@ evaluateMode = isempty(opts.train) ;
 if ~evaluateMode
   for i=1:numel(net.layers)
     J = numel(net.layers{i}.weights) ;
-    if ~isfield(net.layers{i}, 'learningRate')
+    if  ~isa(net.layers{i},'layerWholeL2Normalize')  && ~isfield(net.layers{i}, 'learningRate') 
       net.layers{i}.learningRate = ones(1, J) ;
     end
-    if ~isfield(net.layers{i}, 'weightDecay')
+    if  ~isa(net.layers{i}, 'layerWholeL2Normalize') && ~isfield(net.layers{i}, 'weightDecay')
       net.layers{i}.weightDecay = ones(1, J) ;
     end
   end
@@ -211,7 +213,7 @@ err(1,1) = sum(sum(sum(mass .* error(:,:,1,:)))) ;
 err(2,1) = sum(sum(sum(mass .* min(error(:,:,1:m,:),[],3)))) ;
 
 % -------------------------------------------------------------------------
-function err = error_binary(params, labels, res)
+function err = error_binary(~, labels, res)
 % -------------------------------------------------------------------------
 predictions = gather(res(end-1).x) ;
 error = bsxfun(@times, predictions, labels) < 0 ;
@@ -288,7 +290,7 @@ for t=1:params.batchSize:numel(subset)
     num = num + numel(batch) ;
     if numel(batch) == 0, continue ; end
 
-    [im, labels] = params.getBatch(params.imdb, batch) ;
+    [im, labels] = params.getBatch(params,false,'simplenn',params.imdb, batch) ;
 
     if params.prefetch
       if s == params.numSubBatches
