@@ -13,41 +13,50 @@ net= relja_simplenn_tidy(net);
 % Load the dataset and run the CNN
 delta = 10 ;
 db = dbBoston(delta) ;
-%serialAllFeats(net, db.dbPath, db.dbImageFns, 'output/') ;
-fileID = fopen('output/vd16_pitts30k_conv5_3_vlad_preL2_intra_white_Boston_db.bin') ;
-feats = fread(fileID) ;
-feats = reshape(feats, [, db.numImages]) ;
+
+feats = zeros(db.numImages, 4094) ;
+for i=1:db.numImages
+    im = imread(db.dbImageFns(i)) ;
+    im_ = single(im) ; % note: 255 range
+    im_ = imresize(im_, net.meta.normalization.imageSize(1:2)) ;
+    im_ = bsxfun(@minus, im_, net.meta.normalization.averageImage) ;
+    feats(i, :) = computeRepresentation(net, im_,'useGPU',false) ;
+end
+
+% serialAllFeats(net, db.dbPath, db.dbImageFns, 'output/') ;
+% fileID = fopen('output/vd16_pitts30k_conv5_3_vlad_preL2_intra_white_Boston_db.bin') ;
+% feats = fread(fileID) ;
+% feats = reshape(feats, [, db.numImages]) ;
 
 % --------------------------------------------------------------------
 % Stage A: Data Preparation
 % --------------------------------------------------------------------
 
 % Load training data
-
-train = find(imdb.set == 1) ;
+task = 'safety' ;
+train = find(imdb.set.(task) == 1) ;
 img_train = db.dbImageFns(train) ;
 pos = img_train(db.safetyLabels(train) == 1) ;
 neg = img_train(db.safetyLabels(train) == 2) ;
-
-trainFeatures = feats ; 
-% trainFeatures = [] ;
+ 
+trainFeatures = feats(train, :) ;
 % for i=1:size(names, 2)
 %     trainFeatures = [trainFeatures, feats.layer_fc7(find(strcmp(feats.imgnames, names{i})), :)'] ;
 % end
 
 trainLabels = [ones(1,numel(pos)), 2*ones(1,numel(neg))] ;
 clear pos neg ;
-    
+
 % Load testing data
-test = find(imdb.set == 0) ;
+test = find(imdb.set.(task) == -1) ;
 img_test = db.dbImageFns(test) ;
 pos = img_test(db.safetyLabels(test) == 1) ;
 neg = img_test(db.safetyLabels(test) == 2) ;
 
-testFeatures = [] ;
-for i=1:size(testNames, 2)
-    testFeatures = [testFeatures, feats.layer_fc7(find(strcmp(feats.imgnames, testNames{i})), :)'] ;
-end
+testFeatures = feats(test, :) ;
+% for i=1:size(testNames, 2)
+%     testFeatures = [testFeatures, feats.layer_fc7(find(strcmp(feats.imgnames, testNames{i})), :)'] ;
+% end
 
 testLabels = [ones(1,numel(pos)), 2*ones(1,numel(neg))] ;
 clear pos neg ;
@@ -58,27 +67,27 @@ fprintf('Number of training images: %d positive, %d negative\n', ...
 fprintf('Number of testing images: %d positive, %d negative\n', ...
     sum(testLabels > 0), sum(testLabels < 0)) ;
     
-    % L2 normalize the histograms before running the linear SVM
-    %trainFeatures = bsxfun(@times, trainFeatures, 1./sqrt(sum(trainFeatures.^2,2))) ;
-    %testFeatures = bsxfun(@times, testFeatures, 1./sqrt(sum(testFeatures.^2,2))) ;
+% L2 normalize the histograms before running the linear SVM
+%trainFeatures = bsxfun(@times, trainFeatures, 1./sqrt(sum(trainFeatures.^2,2))) ;
+%testFeatures = bsxfun(@times, testFeatures, 1./sqrt(sum(testFeatures.^2,2))) ;
     
-    % L1 normalize the histograms before running the linear SVM
-    trainFeatures = bsxfun(@times, trainFeatures, 1./sum(trainFeatures,2)) ;
-    testFeatures = bsxfun(@times, testFeatures, 1./sum(testFeatures,2)) ;
+% L1 normalize the histograms before running the linear SVM
+trainFeatures = bsxfun(@times, trainFeatures, 1./sum(trainFeatures,2)) ;
+testFeatures = bsxfun(@times, testFeatures, 1./sum(testFeatures,2)) ;
     
-    % --------------------------------------------------------------------
-    % Stage B: Training a classifier
-    % --------------------------------------------------------------------
+% --------------------------------------------------------------------
+% Stage B: Training a classifier
+% --------------------------------------------------------------------
     
-    % Train the linear SVM. The SVM paramter C is cross-validated.
+% Train the linear SVM. The SVM paramter C is cross-validated.
     
-    crossind = crossvalind('Kfold', size(trainFeatures, 2), 3) ;
+crossind = crossvalind('Kfold', size(trainFeatures, 2), 3) ;
     
-    avg_ap = zeros(1, 5) ;
+avg_ap = zeros(1, 5) ;
     
-    C_choice = [0.1, 15, 50, 100, 1000] ;
+C_choice = [0.1, 15, 50, 100, 1000] ;
     
-    for C = C_choice
+for C = C_choice
         
         for crossround=1:3
             
@@ -126,7 +135,7 @@ fprintf('Number of testing images: %d positive, %d negative\n', ...
             
         end
         
-    end
+end
     
     avg_ap = avg_ap / 3 ;
     [max_ap, max_id] = max(avg_ap) ;
