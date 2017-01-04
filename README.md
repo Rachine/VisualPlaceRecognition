@@ -32,4 +32,4 @@ Intelligence and Lecture Notes in Bioinformatics), pages 494–510. Springer Ver
 [A. Vedaldi and K. Lenc 2015 ] A. Vedaldi and K. Lenc (2015). MatConvNet -- Convolutional Neural Networks for MATLAB. Proceeding of the ACM Int. Conf. on Multimedia
 
 ### Acknowledgments
-A huge part of the code is taken from this [github repository](https://github.com/Relja/netvlad) and the examples in MatConvNet
+A huge part of the code is taken from this [github repository](https://github.com/Relja/netvlad) and the examples in MatConvNet.

@@ -17,7 +17,7 @@ opts.classDescriptions = {} ;
 opts.averageImage = zeros(3,1) ;
 opts.colorDeviation = zeros(3) ;
 opts.loss = 'mhinge';
-opts.delta = 50;
+opts.delta = 20;
 opts.no_retrain = true ; % Variable to retrain or not the transferred layers from NetVlad
 opts.network = [] ;
 opts.expDir = paths.dsetSpecDir ;
@@ -52,7 +52,7 @@ imageStatsPath = fullfile(opts.expDir, strcat('imageStats', imdb.name, '.mat')) 
 if exist(imageStatsPath)
     load(imageStatsPath, 'averageImage', 'rgbMean', 'rgbCovariance') ;
 else
-    train = find(imdb.set == 1) ;
+    train = find(imdb.set.(opts.task) == 1) ;
     images = imdb.dbImageFns(train) ;
     [averageImage, rgbMean, rgbCovariance] = getImageStats(images, ...
         'imageSize', [300 400], ...
@@ -99,13 +99,13 @@ if opts.no_retrain
 end
 
 if ~opts.batchNormalization
-  lr = logspace(-2, -4, 60) ;
+  lr = logspace(-1, -3, 10) ;
 else
   lr = logspace(-1, -4, 20) ;
 end
 
 net.meta.trainOpts.learningRate = lr ;
-net.meta.trainOpts.numEpochs = numel(lr) ;
+net.meta.trainOpts.numEpochs = numel(lr);
 net.meta.trainOpts.batchSize = bs ;
 net.meta.trainOpts.weightDecay = 0.0005 ;
 
@@ -131,7 +131,7 @@ end
 function varargout = getBatch(opts, useGpu, networkType, imdb, batch)
 % -------------------------------------------------------------------------
 images = imdb.dbImageFns(batch) ;
-if ~isempty(batch) && imdb.set(batch(1)) == 1
+if ~isempty(batch) && imdb.set.(opts.task)(batch(1)) == 1
   phase = 'train' ;
 else
   phase = 'val' ;

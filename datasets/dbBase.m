@@ -71,8 +71,8 @@ classdef dbBase < handle
             db.safetyStdScores = db.generateStdScores('safety') ;
             db.wealthStdScores = db.generateStdScores('wealth') ;
             
-            db.set = db.split() ; 
-            
+            db.set.safety = db.split('safety') ; 
+            db.set.wealth = db.split('wealth') ;
             % make paths absolute just in case (e.g. vl_imreadjpeg needs absolute path)
             
             for propName= properties(db)'
@@ -105,11 +105,15 @@ classdef dbBase < handle
             stdScores = zscore(rawScores) ;
         end
         
-        function [set] = split(db)
+        function [set] = split(db,type)
+            % 'type' must be 'safety' or 'wealth'
+            indexes = find(db.(strcat(type,'Labels')) ~= 0) ;
+            numImages = size(indexes,2);
             set = zeros(1, db.numImages) ;
-            randIndexes = randperm(db.numImages) ;
-            size_train = floor(0.75*db.numImages) ;
-            set(randIndexes(1:size_train)) = 1 ;
+            randIndexes = randperm(numImages) ;
+            size_train = floor(0.75*numImages) ;
+            set(indexes(randIndexes(1:size_train))) = 1 ;
+            set(indexes(randIndexes((size_train+1):end))) = -1 ;
         end
     
     end
