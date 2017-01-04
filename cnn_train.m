@@ -18,7 +18,7 @@ function [net, stats] = cnn_train(net, imdb, getBatch, varargin)
 % the terms of the BSD license (see the COPYING file).
 
 opts.expDir = fullfile('data','exp') ;
-opts.continue = true ;
+opts.continue = false ;
 opts.batchSize = 256 ;
 opts.numSubBatches = 1 ;
 opts.train = [] ;
@@ -51,8 +51,8 @@ opts.task = 'safety';
 opts = vl_argparse(opts, varargin) ;
 
 if ~exist(opts.expDir, 'dir'), mkdir(opts.expDir) ; end
-if isempty(opts.train), opts.train = find(imdb.set==1) ; end
-if isempty(opts.val), opts.val = find(imdb.set==0) ; end
+if isempty(opts.train), opts.train = find(imdb.set.(opts.task) == 1) ; end
+if isempty(opts.val), opts.val = find(imdb.set.(opts.task) == -1) ; end
 if isnan(opts.train), opts.train = [] ; end
 if isnan(opts.val), opts.val = [] ; end
 
@@ -60,7 +60,7 @@ if isnan(opts.val), opts.val = [] ; end
 %                                                            Initialization
 % -------------------------------------------------------------------------
 
-net = vl_simplenn_tidy(net); % fill in some eventually missing values
+% net = vl_simplenn_tidy(net); % fill in some eventually missing values
 net.layers{end-1}.precious = 1; % do not remove predictions, used for error
 vl_simplenn_display(net, 'batchSize', opts.batchSize) ;
 
