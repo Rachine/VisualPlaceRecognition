@@ -99,7 +99,7 @@ if opts.no_retrain
 end
 
 if ~opts.batchNormalization
-  lr = logspace(-1, -3, 10) ;
+  lr = logspace(-3, -4, 10) ;
 else
   lr = logspace(-1, -4, 20) ;
 end
