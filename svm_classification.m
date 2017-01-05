@@ -2,7 +2,7 @@
 % setup MATLAB and the paths
 setup ;
 paths = localPaths() ;
-error('missing trainLinearSVM');
+% error('missing trainLinearSVM');
 % --------------------------------------------------------------------
 % Stage A: Data Preparation
 % --------------------------------------------------------------------
@@ -19,7 +19,7 @@ delta = 40 ;
 % city = 'Boston';
 task = 'safety' ;
 db = dbBoston(delta) ;
-
+display('Compute feature representation with NetVlad');
 feats = zeros(db.numImages, 4096) ;
 for i=1:db.numImages
     im = getImageBatch(db.dbImageFns(i));
@@ -32,6 +32,7 @@ end
 
 % Load training data
 
+display('Load training and test labels from db');
 
 train = find(db.set.(task) == 1) ;
 img_train = db.dbImageFns(train) ;
@@ -70,8 +71,8 @@ fprintf('Number of testing images: %d positive, %d negative\n', ...
 %testFeatures = bsxfun(@times, testFeatures, 1./sqrt(sum(testFeatures.^2,2))) ;
     
 % L1 normalize the histograms before running the linear SVM
-trainFeatures = bsxfun(@times, trainFeatures, 1./sum(trainFeatures,2)) ;
-testFeatures = bsxfun(@times, testFeatures, 1./sum(testFeatures,2)) ;
+% trainFeatures = bsxfun(@times, trainFeatures, 1./sum(trainFeatures,2)) ;
+% testFeatures = bsxfun(@times, testFeatures, 1./sum(testFeatures,2)) ;
     
 % --------------------------------------------------------------------
 % Stage B: Training a classifier
@@ -141,26 +142,34 @@ testFeatures = bsxfun(@times, testFeatures, 1./sum(testFeatures,2)) ;
 %     disp(C_best)
 %     
     % SVM classifier with the best C
-    C_best = 15;
+    %%
+    C_best = 0.00001;
+    display('Train a SVM classifier on training dataset');
+    trainFeatures = trainFeatures';
+    testFeatures = testFeatures';
     [w, bias] = trainLinearSVM(trainFeatures, trainLabels, C_best) ;
             
     % Evaluate the scores on the training data
+    display('Evaluate scores on training');
+
     scores = w' * trainFeatures + bias ;
             
-    % Visualize the ranked list of images
-    figure(1) ; clf ; set(1,'name','Ranked training images (subset)') ;
-    displayRankedImageList(names, scores)  ;
-            
+%     % Visualize the ranked list of images
+%     figure(1) ; clf ; set(1,'name','Ranked training images (subset)') ;
+%     displayRankedImageList(names, scores)  ;
+%             
     % Visualize the precision-recall curve
     figure(2) ; clf ; set(2,'name','Precision-recall on train data') ;
-    vl_pr(labels, scores) ;
+    vl_pr(trainLabels, scores) ;
     
     % Test the linear SVM
+    display('Evaluate scores on test');
+
     testScores = w' * testFeatures + bias ;
     
     % Visualize the ranked list of images
-    figure(3) ; clf ; set(3,'name','Ranked test images (subset)') ;
-    displayRankedImageList(testNames, testScores)  ;
+%     figure(3) ; clf ; set(3,'name','Ranked test images (subset)') ;
+%     displayRankedImageList(testNames, testScores)  ;
     
     % Visualize the precision-recall curve
     figure(4) ; clf ; set(4,'name','Precision-recall on test data') ;
@@ -170,7 +179,7 @@ testFeatures = bsxfun(@times, testFeatures, 1./sum(testFeatures,2)) ;
     [~,~,info] = vl_pr(testLabels, testScores) ;
     fprintf('Test AP: %.2f\n', info.auc) ;
     
-    ap_array = [ap_array info.auc] ;
+%     ap_array = [ap_array info.auc] ;
     
     [~,perm] = sort(testScores,'descend') ;
     fprintf('Correctly retrieved in the top 36: %d\n', sum(testLabels(perm(1:36)) > 0)) ;
