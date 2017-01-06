@@ -1,9 +1,15 @@
 function dbStruct=buildDatasetSpec(dataset_folder,jsonPath,city)
+% Function to build dataset according to spec from NetVlad
+% Command to run for NY for instance: 
+% buildDatasetSpec(strcat(pwd,'/datasets/datasets'),strcat(pwd,'/Data/consolidated_data_jsonformatted.json'),'NY')
     dat=loadjson([jsonPath]); 
     num_images = size(dat,2);
     dbStruct = struct('dbImageFns',[],'utmDb',[], ...
         'numImages',[],'safetyDb',[],'wealthDb',[]);
     num_city = 0;
+    if strcmp(city,'NY')
+        city = 'New York City';
+    end
     for index = 1:num_images
         image = dat(index);
         im = image{1};
@@ -27,6 +33,9 @@ function dbStruct=buildDatasetSpec(dataset_folder,jsonPath,city)
             dbStruct.safetyDb(indice) =  sscanf(im.QS_0x20_Safer,'%f');
             dbStruct.wealthDb(indice) =  sscanf(im.QS_0x20_Upperclass,'%f');
         end
+    end
+    if strcmp(city,'New York City')
+        city = 'NY';
     end
     save(strcat(dataset_folder,'/',city,'.mat'),'dbStruct');
 end
