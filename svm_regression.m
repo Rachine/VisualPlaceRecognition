@@ -10,16 +10,16 @@ paths = localPaths() ;
 % Load the pretrained CNN
 
 netID= 'vd16_pitts30k_conv5_3_vlad_preL2_intra_white';
-
+% netID = 'caffe_pitts30k_conv5_vlad_preL2_intra_white';
 load( sprintf('%s%s.mat', paths.pretrainedCNNs, netID), 'net' ); 
 net = relja_simplenn_tidy(net);
-
+%%
 % Load the dataset and run the CNN
-delta = 40 ;
+delta = 50 ;
 city = 'Boston';
-task = 'safety' ;
+task = 'safety';
 db = dbBoston(delta) ;
-display('Compute feature representation with NetVlad');
+display('Compute feature representation with NetVlad for Boston');
 feats = zeros(db.numImages, 4096) ;
 for i=1:db.numImages
     im = getImageBatch(db.dbImageFns(i),'city',city);
@@ -30,50 +30,70 @@ for i=1:db.numImages
     feats(i, :) = computeRepresentation(net, im_,'useGPU',false) ;
 end
 
+% [coeff, score] = pca(feats,'NumComponents',1200);
+% reducedDimension = coeff(:,1:1200);
+% reducedFeats = feats * reducedDimension;
 % Load training data
 
-display('Load training and test labels from db');
+display('Load training and test labels from Boston db');
 
 train = find(db.set.(task) == 1) ;
 img_train = db.dbImageFns(train) ;
-pos = img_train(db.safetyLabels(train) == 1) ;
-neg = img_train(db.safetyLabels(train) == 2) ;
- 
+
+% Load Training data
 trainFeatures = feats(train, :) ;
-% for i=1:size(names, 2)
-%     trainFeatures = [trainFeatures, feats.layer_fc7(find(strcmp(feats.imgnames, names{i})), :)'] ;
-% end
+trainLabels = db.safetyStdScores(train) ;
 
-trainLabels = [ones(1,numel(pos)), - ones(1,numel(neg))] ;
-clear pos neg ;
-
-% Load testing data
+% Load Testing data
 test = find(db.set.(task) == -1) ;
 img_test = db.dbImageFns(test) ;
-pos = img_test(db.safetyLabels(test) == 1) ;
-neg = img_test(db.safetyLabels(test) == 2) ;
+
 
 testFeatures = feats(test, :) ;
-% for i=1:size(testNames, 2)
-%     testFeatures = [testFeatures, feats.layer_fc7(find(strcmp(feats.imgnames, testNames{i})), :)'] ;
-% end
+testLabels = db.safetyStdScores(test);
+%%
+delta = 50 ;
+city = 'NY';
+task = 'safety';
+db = dbNY(delta) ;
+display('Compute feature representation with NetVlad for NY');
+feats = zeros(db.numImages, 4096) ;
+for i=1:db.numImages
+    im = getImageBatch(db.dbImageFns(i),'city',city);
+%     im = vl_imreadjpeg(imPath) ;
+    im_ = single(im) ; % note: 255 range
+    im_ = imresize(im_, net.meta.normalization.imageSize(1:2)) ;
+    im_ = bsxfun(@minus, im_, net.meta.normalization.averageImage) ;
+    feats(i, :) = computeRepresentation(net, im_,'useGPU',false) ;
+end
 
-testLabels = [ones(1,numel(pos)), - ones(1,numel(neg))] ;
-clear pos neg ;
-    
-% count how many images are there
-fprintf('Number of training images: %d positive, %d negative\n', ...
-    sum(trainLabels > 0), sum(trainLabels < 0)) ;
-fprintf('Number of testing images: %d positive, %d negative\n', ...
-    sum(testLabels > 0), sum(testLabels < 0)) ;    
-% L2 normalize the histograms before running the linear SVM
-%trainFeatures = bsxfun(@times, trainFeatures, 1./sqrt(sum(trainFeatures.^2,2))) ;
-%testFeatures = bsxfun(@times, testFeatures, 1./sqrt(sum(testFeatures.^2,2))) ;
-    
-% L1 normalize the histograms before running the linear SVM
-% trainFeatures = bsxfun(@times, trainFeatures, 1./sum(trainFeatures,2)) ;
-% testFeatures = bsxfun(@times, testFeatures, 1./sum(testFeatures,2)) ;
-    
+% [coeff, score] = pca(feats,'NumComponents',1200);
+% reducedDimension = coeff(:,1:1200);
+% reducedFeats = feats * reducedDimension;
+% Load training data
+
+display('Load training and test labels from Boston db');
+
+train = find(db.set.(task) == 1) ;
+img_train = db.dbImageFns(train) ;
+
+% Load Training data
+trainFeatures_NY = feats(train, :) ;
+trainLabels_NY = db.safetyStdScores(train) ;
+
+% Load Testing data
+test = find(db.set.(task) == -1) ;
+img_test = db.dbImageFns(test) ;
+
+
+testFeatures_NY = feats(test, :) ;
+testLabels_NY = db.safetyStdScores(test);
+  
+trainFeatures = [trainFeatues;trainFeatures_NY];
+testFeatures = [testFeatures; testFeatures_NY];
+trainLabels = [trainLabels;trainLabels_NY];
+testLabels = [testLabels; testLabels_NY];
+%%
 % --------------------------------------------------------------------
 % Stage B: Training a classifier
 % --------------------------------------------------------------------
@@ -143,7 +163,7 @@ fprintf('Number of testing images: %d positive, %d negative\n', ...
 %     
     % SVM classifier with the best C
     %%
-    C_best = 0.00001;
+    C_best = 0.100;
     display('Train a SVM classifier on training dataset');
     trainFeatures = trainFeatures';
     testFeatures = testFeatures';
@@ -159,9 +179,9 @@ fprintf('Number of testing images: %d positive, %d negative\n', ...
 %     displayRankedImageList(names, scores)  ;
 %             
     % Visualize the precision-recall curve
-    figure(2) ; clf ; set(2,'name','Precision-recall on train data') ;
-    vl_pr(trainLabels, scores) ;
-    
+%     figure(2) ; clf ; set(2,'name','Precision-recall on train data') ;
+%     vl_pr(trainLabels, scores) ;
+%     
     % Test the linear SVM
     display('Evaluate scores on test');
 
@@ -172,14 +192,17 @@ fprintf('Number of testing images: %d positive, %d negative\n', ...
 %     displayRankedImageList(testNames, testScores)  ;
     
     % Visualize the precision-recall curve
-    figure(4) ; clf ; set(4,'name','Precision-recall on test data') ;
-    vl_pr(testLabels, testScores) ;
+%     figure(4) ; clf ; set(4,'name','Precision-recall on test data') ;
+%     vl_pr(testLabels, testScores) ;
     
     % Print results
-    [~,~,info] = vl_pr(testLabels, testScores) ;
-    fprintf('Test AP: %.2f\n', info.auc) ;
+%     [~,~,info] = vl_pr(testLabels, testScores) ;
+%     fprintf('Test AP: %.2f\n', info.auc) ;
     
 %     ap_array = [ap_array info.auc] ;
-    
+    R = corrcoef(trainLabels,scores);
+    fprintf('R-correlation for training: %.2f\n', R(1,2)) ;
+    Rtest = corrcoef(testLabels,testScores);
+    fprintf('R-correlation for test: %.2f\n', Rtest(1,2)) ;
     [~,perm] = sort(testScores,'descend') ;
     fprintf('Correctly retrieved in the top 36: %d\n', sum(testLabels(perm(1:36)) > 0)) ;
