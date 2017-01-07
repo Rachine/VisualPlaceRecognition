@@ -252,9 +252,9 @@ classdef Learning
                 train_labels = data.train_labels;
                 val_labels = data.val_labels;
                 test_labels = data.test_labels;
-%                train_labels = 10 ./ (1 + exp(-(data.train_labels - mean(data.train_labels))));
-%                val_labels = 10 ./ (1 + exp(-(data.val_labels - mean(data.val_labels))));
-%                test_labels = 10 ./ (1 + exp(-(data.test_labels - mean(data.test_labels))));
+               train_labels = 10 ./ (1 + exp(-(data.train_labels - mean(data.train_labels))));
+               val_labels = 10 ./ (1 + exp(-(data.val_labels - mean(data.val_labels))));
+               test_labels = 10 ./ (1 + exp(-(data.test_labels - mean(data.test_labels))));
 
                 model_ = train(train_labels, sparse(features.train_features), ...
                                sprintf('-s %d -c %f -e %f -q', config.svm_method, c, p));
@@ -597,4 +597,3 @@ classdef Learning
 
     end
 end
-

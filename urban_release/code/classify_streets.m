@@ -93,7 +93,7 @@ end
 compute_features_streets;
 
 % Now run experiments.
-metric_set = {'safer', 'upperclass'};
+metric_set = { 'unique'};
 %metric_set = {'safer', 'unique', 'upperclass'};
 cities_harder = cities(end:-1:1);
 for metric_ind = 1 : length(metric_set)

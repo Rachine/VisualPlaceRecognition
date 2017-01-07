@@ -1,23 +1,24 @@
 % Run standard computer vision whole-image regression on a dataset 
 % loaded into the "data" data structure.
 % Vicente Ordonez @ UNC Chapel Hill
-addpath(genpath('../lib/vlfeat-0.9.17')); vl_setup;
-addpath(genpath('../lib/liblinear-1.94/matlab'));
-addpath(genpath('../lib/gist'));
+addpath(genpath('/home/rachine/Documents/MVA/Object Recognition/practical-category-recognition-2015a/vlfeat')); vl_setup;
+addpath(genpath('lib/liblinear-1.94/matlab'));
+addpath(genpath('lib/gist'));
 addpath(genpath('util'));
 
 % Set unique experiment identifier.
 config.experiment_id = 'urbanperception';
 
-% Configure experiment datasource for 2013 images.
-config.homedir = '/mnt/raid/data/vicente/urbanperception/';
-config.datasource = 'placepulse_2013';
+% Configure experiment datasource for 2011 images.
+%config.homedir = '/mnt/raid/data/vicente/urbanperception/';
+config.homedir = pwd;
+config.datasource = 'placepulse_2011';
 config.image_url = ['http://tlberg.cs.unc.edu/vicente/urban/data/' config.datasource '/images/'];
 config.image_path = [config.homedir '/data/' config.datasource '/images'];
-%config.urban_data_file = [config.homedir '/data/' config.datasource '/consolidated_data_jsonformatted.json'];
-config.urban_data_file = [config.homedir '/data/placepulse_2011/consolidated_data.csv'];
-config.urban_data_file_type = 'csv';
-%config.urban_data_file_type = 'json';
+config.urban_data_file = [config.homedir '/data/' config.datasource '/consolidated_data_jsonformatted.json'];
+%%config.urban_data_file = [config.homedir '/data/' config.datasource '/consolidated_data.csv'];
+%%config.urban_data_file_type = 'csv';
+config.urban_data_file_type = 'json';
 
 % Configure experiment datasource for 2011 experiment.
 %config.homedir = '/mnt/raid/data/vicente/urbanperception/';
@@ -28,9 +29,13 @@ config.urban_data_file_type = 'csv';
 %config.urban_data_file_type = 'csv';
 
 % Configure feature type.
-%config.feature_type = 'fisher';
-config.feature_type = 'decaf';
-%config.feature_type = 'gist';
+config.feature_type = 'netvlad';
+% config.feature_type = 'fisher';
+% config.feature_type = 'decaf';
+% config.feature_type = 'gist';
+
+% Netvlad features configuration.
+config.netvlad_features_path = [config.homedir '/output/' config.datasource '/netvlad_features.mat'];
 
 % Gist features configuration.
 config.gist_features_path = [config.homedir '/output/' config.datasource '/gist_features.mat'];
