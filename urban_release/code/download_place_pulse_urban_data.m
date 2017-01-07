@@ -18,16 +18,16 @@ urban = read_place_pulse_urban_data(data_file);
 % size_str = '400x300'; latlong_str = '48.271,14.309';
 % pitch = 'NULL'; heading = 'NULL'; fov = 'NULL'
 % Get an API key from Google APIs
-api_key = 'QaGfyl6Cmb-gO5MPXUepXHL0S3s=';
-%api_url = ['http://maps.googleapis.com/maps/api/streetview?' ...
-%          'size=%s&location=%s&sensor=false&key=%s' ...
-%          '&heading=%s&fov=%s&pitch=%s'];
-streetViewPath = 'https://maps.googleapis.com/maps/api/streetview?size=400x300';
-streetViewPath = strcat(streetViewPath,'&location=',im.Lat,',',im.Lon);
-streetViewPath = strcat(streetViewPath,'&heading=',im.Heading);
-streetViewPath = strcat(streetViewPath,'&pitch=',im.Pitch);
-streetViewPath = strcat(streetViewPath,'&key=',key);
-api_url = [streetViewPath]; 
+api_key = 'AIzaSyCOVyigKCzgpGFWM77BcbYjLbFo2o_80WE';
+api_url = ['https://maps.googleapis.com/maps/api/streetview?' ...
+         'size=%s&location=%s&sensor=false&key=%s' ...
+         '&heading=%s&fov=%s&pitch=%s'];
+% streetViewPath = 'https://maps.googleapis.com/maps/api/streetview?size=400x300';
+% streetViewPath = strcat(streetViewPath,'&location=',im.Lat,',',im.Lon);
+% streetViewPath = strcat(streetViewPath,'&heading=',im.Heading);
+% streetViewPath = strcat(streetViewPath,'&pitch=',im.Pitch);
+% streetViewPath = strcat(streetViewPath,'&key=',key);
+% api_url = [streetViewPath]; 
 
 % Download images from street view.
 for i = randperm(length(urban.cities))%1 : length(urban.cities)
@@ -40,8 +40,8 @@ for i = randperm(length(urban.cities))%1 : length(urban.cities)
         fov_str = 'NULL';
         request_url = sprintf(api_url, size_str, latlong_str, api_key, ...
                               heading_str, fov_str, pitch_str);
-        imdata = imread(request_url);
-        imwrite(imdata, out_filename);
+        imdata = imread(request_url,'jpg');
+        imwrite(imdata, out_filename,'jpg');
         pause(0.1);
     end
 end

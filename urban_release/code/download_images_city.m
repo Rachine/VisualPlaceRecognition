@@ -2,7 +2,7 @@
 addpath('util');
 
 % City information and general configuration options.
-config.homedir = '/mnt/raid/data/vicente/urbanperception/';
+config.homedir = '/home/rachine/VisualPlaceRecognition/urban_release';
 config.city_id = 'newyork';
 % Boundaries file are coordinates of a polygon surrounding the city.
 % You can create one manually using Google Map Creator and then exporting to KML.
@@ -14,7 +14,9 @@ config.download_image_dir = [config.homedir '/data/images_' config.city_id];
 config.size_str = '640x420';
 
 % Google Street View API configuration.
-config.api_key = 'AIzaSyCQGajheBaRe0Vqip4ge1Z3u1HTy0VSJ_Q';  % Get a code from Google Apis.
+config.api_key = 'AIzaSyCOVyigKCzgpGFWM77BcbYjLbFo2o_80WE';  % Get a code from Google Apis.
+% api_key = '	AIzaSyCOVyigKCzgpGFWM77BcbYjLbFo2o_80WE';
+
 config.api_url = ['http://maps.googleapis.com/maps/api/streetview?' ...
                   'size=%s&location=%s&sensor=false&key=%s' ...
                   '&heading=%s&fov=%s&pitch=%s'];

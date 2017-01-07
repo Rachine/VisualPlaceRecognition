@@ -17,10 +17,10 @@ net = relja_simplenn_tidy(net);
 
 % Compute feature representations
 
-numImages = size(filelist(1), 1) ;
+numImages = size(filelist, 2) ;
 features = zeros(numImages, 4096) ;
 for i=1:numImages
-    im = getImageBatch(filelist(1){i}(1));
+    im = getImageBatch(filelist(i));
 %   im = vl_imreadjpeg(imPath) ;
     im_ = single(im) ; % note: 255 range
     im_ = imresize(im_, net.meta.normalization.imageSize(1:2)) ;
@@ -29,3 +29,5 @@ for i=1:numImages
 end
 
 output.features = features ;
+
+end

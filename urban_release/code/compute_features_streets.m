@@ -27,7 +27,7 @@ elseif strcmp(config.feature_type, 'gist')
 elseif strcmp(config.feature_type, 'netvlad')
     if ~exist(config.netvlad_features_path, 'file') % TO DO: DEFINE PATH
         image_list = cellfun(@(x){sprintf('%s/%s', config.image_path, x)}, urban.data.image_names); % TO DO: LOAD DATA
-        compute_netvlad_features(config.image_path, data.images, config.netvlad_features_path);
+        compute_netvlad_features(config.image_path,image_list, config.netvlad_features_path);
     else
         netvlad_features = load(config.netvlad_features_path);
         thefeatures = squeeze(netvlad_features.netvlad_features.features); % TO DO: UNDERSTAND (cleaning ?)

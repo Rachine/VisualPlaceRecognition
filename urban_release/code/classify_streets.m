@@ -1,7 +1,9 @@
 % Run standard computer vision whole-image classification on a dataset 
 % loaded into the "data" data structure.
 % Vicente Ordonez @ UNC Chapel Hill
-addpath(genpath('../lib/vlfeat-0.9.17')); vl_setup;
+% addpath(genpath('../lib/vlfeat-0.9.17')); vl_setup;
+
+addpath(genpath('/home/rachine/Documents/MVA/Object Recognition/practical-category-recognition-2015a/vlfeat')); vl_setup;
 addpath(genpath('../lib/liblinear-1.94/matlab'));
 addpath(genpath('../lib/gist'));
 addpath(genpath('util'));
@@ -21,7 +23,7 @@ config.experiment_id = 'urbanperception';
 
 % Configure experiment datasource for 2011 images.
 %config.homedir = '/mnt/raid/data/vicente/urbanperception/';
-config.homedir = strcat(pwd, '/');
+config.homedir = pwd;
 config.datasource = 'placepulse_2011';
 config.image_url = ['http://tlberg.cs.unc.edu/vicente/urban/data/' config.datasource '/images/'];
 config.image_path = [config.homedir '/data/' config.datasource '/images'];

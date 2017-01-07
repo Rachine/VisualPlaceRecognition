@@ -10,10 +10,11 @@ config.netvlad_features_path = features_path;
 
 % Now compute features for all images in our dataset using Netvlad.
 if ~exist(config.netvlad_features_path, 'file')
-    cd('../../..');
+    cd('../');
     netvlad_features = runNetvlad(image_list);
     cd('urban_release/code/util');
     save(config.netvlad_features_path, 'netvlad_features', 'image_list', '-v7.3');
+    cd('../../');
 else
     disp('Features already computed');
 end
