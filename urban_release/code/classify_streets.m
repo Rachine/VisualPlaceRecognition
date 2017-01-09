@@ -25,7 +25,7 @@ config.experiment_id = 'urbanperception';
 %config.homedir = '/mnt/raid/data/vicente/urbanperception/';
 config.homedir = pwd;
 config.datasource = 'placepulse_2011';
-config.image_url = ['http://tlberg.cs.unc.edu/vicente/urban/data/' config.datasource '/images/'];
+config.image_url = ['http://localhost:8000/data/' config.datasource '/images'];
 config.image_path = [config.homedir '/data/' config.datasource '/images'];
 config.urban_data_file = [config.homedir '/data/' config.datasource '/consolidated_data_jsonformatted.json'];
 %%config.urban_data_file = [config.homedir '/data/' config.datasource '/consolidated_data.csv'];
@@ -93,8 +93,8 @@ end
 compute_features_streets;
 
 % Now run experiments.
-metric_set = { 'unique'};
-%metric_set = {'safer', 'unique', 'upperclass'};
+% metric_set = { 'unique'};
+metric_set = {'safer', 'unique', 'upperclass'};
 cities_harder = cities(end:-1:1);
 for metric_ind = 1 : length(metric_set)
 % Now run classification.
