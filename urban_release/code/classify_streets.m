@@ -35,7 +35,7 @@ config.urban_data_file_type = 'json';
 
 % Configure feature type.
 config.feature_type = 'netvlad';
-%config.feature_type = 'decaf';
+% config.feature_type = 'decaf';
 %config.feature_type = 'fisher';
 %config.feature_type = 'gist';
 
@@ -198,6 +198,8 @@ for city_ind = 1 : length(cities)
              'Marker', 'x', 'MarkerEdgeColor', 'red', 'LineStyle', ...
              'none', 'Color', [0.6 0.3 0.1]);
     axis([0 0.55 0.5 1]);grid;
+    xlabel('delta \delta');
+    ylabel('Average accuracy');
     print('-dpng', '-r60', sprintf('%s/%s_%s/%s/results.png', ...
                             config.results_path, config.experiment_id, ...
                             city_identifier, metric_str));
